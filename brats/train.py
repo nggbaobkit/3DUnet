@@ -8,7 +8,7 @@ sys.path.append('../')
 
 from unet3d.data import write_data_to_file, open_data_file
 from unet3d.generator import get_training_and_validation_generators
-from unet3d.model import isensee2017_model
+from unet3d.model import isensee2017_model, attention_unet_model
 from unet3d.training import load_old_model, train_model
 import unet3d.metrics as module_metric
 import keras.optimizers as opts
@@ -50,22 +50,42 @@ def main(config=None):
     data_file_opened = open_data_file(config["data_file"])
 
     if not overwrite and os.path.exists(config["model_file"]):
+        # if this happens, then the code wont care what is in "model_name" in config
+        # because it will take what ever the pretrained was (either 3d_unet_residual or attention_unet) to continue training.
+        # need to be careful with this.
         model = load_old_model(config, re_compile=False)
-        # model.summary()
+        model.summary()
         # visualizeFiltersShape(model)
     else:
         # instantiate new model
-        model = isensee2017_model(input_shape=config["input_shape"], 
+        if (config["model_name"] == "3d_unet_residual"): 
+            """3D Unet Residual Model"""
+            model = isensee2017_model(input_shape=config["input_shape"], 
                                     n_labels=config["n_labels"], 
                                     n_base_filters=config["n_base_filters"], 
                                     activation_name='softmax')
+            optimizer = getattr(opts, config["optimizer"]["name"])(**config["optimizer"].get('args'))
+            loss = getattr(module_metric, config["loss_fc"])
+            metrics = [getattr(module_metric, x) for x in config["metrics"]]
+            model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
+            model.summary()
+            # visualizeFiltersShape(model)
+        elif (config["model_name"] == "attention_unet"):
+            """Attention Unet Model"""
+            model = attention_unet_model(input_shape=config["input_shape"], 
+                                    n_labels=config["n_labels"], 
+                                    n_base_filters=config["n_base_filters"], 
+                                    activation_name='softmax')
+            optimizer = getattr(opts, config["optimizer"]["name"])(**config["optimizer"].get('args'))
+            loss = getattr(module_metric, config["loss_fc"])
+            metrics = [getattr(module_metric, x) for x in config["metrics"]]
+            model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
+            model.summary()
+            # visualizeFiltersShape(model)
+        else: 
+            """Wrong entry for model_name"""
+            raise Exception('Look at field model_best in config.json! This field can be either 3d_unet_residual or attention_unet.')
 
-        optimizer = getattr(opts, config["optimizer"]["name"])(**config["optimizer"].get('args'))
-        loss = getattr(module_metric, config["loss_fc"])
-        metrics = [getattr(module_metric, x) for x in config["metrics"]]
-        model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
-        # model.summary()
-        # visualizeFiltersShape(model)
 
     # get training and testing generators
     train_generator, validation_generator, n_train_steps, n_validation_steps = get_training_and_validation_generators(
