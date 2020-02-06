@@ -30,6 +30,15 @@ def fetch_training_data_files(return_subject_ids=False):
     else:
         return training_data_files
 
+def visualizeFiltersShape(model):
+    # Ex: conv3d_1 (3, 3, 3, 4, 16) 
+    for layer in model.layers:
+        if 'conv' not in layer.name:
+            print(layer.name)
+            continue
+        filters, biases = layer.get_weights()
+        print(layer.name, filters.shape)
+
 def main(config=None):
     # convert input images into an hdf5 file
     overwrite = config['overwrite']
@@ -42,6 +51,8 @@ def main(config=None):
 
     if not overwrite and os.path.exists(config["model_file"]):
         model = load_old_model(config, re_compile=False)
+        # model.summary()
+        # visualizeFiltersShape(model)
     else:
         # instantiate new model
         model = isensee2017_model(input_shape=config["input_shape"], 
@@ -53,6 +64,8 @@ def main(config=None):
         loss = getattr(module_metric, config["loss_fc"])
         metrics = [getattr(module_metric, x) for x in config["metrics"]]
         model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
+        # model.summary()
+        # visualizeFiltersShape(model)
 
     # get training and testing generators
     train_generator, validation_generator, n_train_steps, n_validation_steps = get_training_and_validation_generators(
