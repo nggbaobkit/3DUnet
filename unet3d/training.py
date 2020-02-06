@@ -39,8 +39,10 @@ def get_callbacks(model_file, initial_learning_rate=0.0001, learning_rate_drop=0
 
 def load_old_model(config, re_compile=False):
     print("Loading pre-trained model. This model can be used to either continue training or validating samples.")
-    print("Reminder: Your putting the weight file (.h5) in the correct path has caused the code to load and use that .h5 file.")
-    print("This mean whatever the model name in model_name field in config.json is, the current model is the one which was trained and stored in .h5 file.")
+    print("Reminder: Your putting the weight file (.h5) in the correct path has caused the code to load and use that "
+          ".h5 file.")
+    print("This mean whatever the model name in model_name field in config.json is, the current model is the one "
+          "which was trained and stored in .h5 file.")
     custom_objects = dict()
     custom_objects[config['loss_fc']] = getattr(module_metric, config['loss_fc'])
     for metric in config['metrics']:
@@ -66,6 +68,7 @@ def load_old_model(config, re_compile=False):
                                           "'pip install git+https://www.github.com/keras-team/keras-contrib.git'")
         else:
             raise error
+
 
 def train_model(model, model_file, training_generator, validation_generator, steps_per_epoch, validation_steps,
                 initial_learning_rate=0.001, learning_rate_drop=0.5, learning_rate_epochs=None, n_epochs=500,

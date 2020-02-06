@@ -4,7 +4,6 @@ from keras.layers import Input, LeakyReLU, Add, UpSampling3D, Activation, Spatia
 from keras.engine import Model
 from .unet import create_convolution_block, concatenate
 
-
 create_convolution_block = partial(create_convolution_block, activation=LeakyReLU, instance_normalization=True)
 
 
@@ -33,34 +32,34 @@ def isensee2017_model(input_shape=(4, 128, 128, 128), n_base_filters=16, depth=5
     inputs = Input(input_shape)
 
     current_layer = inputs
-    level_output_layers = list() #result of each level after doing summation of residual
-    level_filters = list() #number of filters regards each level
+    level_output_layers = list()  # result of each level after doing summation of residual
+    level_filters = list()  # number of filters regards each level
     for level_number in range(depth):
-        n_level_filters = (2**level_number) * n_base_filters
+        n_level_filters = (2 ** level_number) * n_base_filters
         level_filters.append(n_level_filters)
 
         if current_layer is inputs:
-            # level 0 (up-most) of left path doesnot stride
+            # level 0 (up-most) of left path does not stride
             in_conv = create_convolution_block(current_layer, n_level_filters)
         else:
             # other levels of left path stride 2
             in_conv = create_convolution_block(current_layer, n_level_filters, strides=(2, 2, 2))
 
-        #after 3x3x3 conv (and stride 2x2x2), pass through context modules
+        # after 3x3x3 conv (and stride 2x2x2), pass through context modules
         context_output_layer = create_context_module(in_conv, n_level_filters, dropout_rate=dropout_rate)
 
-        #using result of context module and result of conv 3x3x3 to perform residual learning
+        # using result of context module and result of conv 3x3x3 to perform residual learning
         summation_layer = Add()([in_conv, context_output_layer])
-        
-        #position on left path before passing on "-- line" to get to right path
+
+        # position on left path before passing on "-- line" to get to right path
         level_output_layers.append(summation_layer)
-        #at the end of the for loop, "current_layer" will be level 4 (bottom-most one)
+        # at the end of the for loop, "current_layer" will be level 4 (bottom-most one)
         current_layer = summation_layer
 
     segmentation_layers = list()
     for level_number in range(depth - 2, -1, -1):
-        #start upsampling (from level 4)
-        #the first iter: upsampling result of level 4 to scale of level 3
+        # start upsampling (from level 4)
+        # the first iter: upsampling result of level 4 to scale of level 3
         up_sampling = create_up_sampling_module(current_layer, level_filters[level_number])
         concatenation_layer = concatenate([level_output_layers[level_number], up_sampling], axis=1)
         localization_output = create_localization_module(concatenation_layer, level_filters[level_number])
