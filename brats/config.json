@@ -34,7 +34,6 @@
     "model_name": "attention_unet",
     "data_file": "brats_data_isensee_2018.h5",
     "model_file": "isensee_2018_model.h5",
-    "weigths_file": "isensee_2018_weights.h5",
     "training_file": "isensee_training_ids.pkl",
     "validation_file": "isensee_validation_ids.pkl",
     "model_best":"checkpoints/model_best.h5",
