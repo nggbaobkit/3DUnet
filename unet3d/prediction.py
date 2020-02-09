@@ -126,13 +126,16 @@ def run_validation_case(data_index, output_dir, model, data_file, training_modal
     test_truth = nib.Nifti1Image(data_file.root.truth[data_index][0], affine)
     test_truth.to_filename(os.path.join(output_dir, "truth.nii.gz"))
 
+    # Start predict process
     patch_shape = tuple([int(dim) for dim in model.input.shape[-3:]])
     if patch_shape == test_data.shape[-3:]:
         prediction = predict(model, test_data, permute=permute)
     else:
         prediction = patch_wise_prediction(model=model, data=test_data, overlap=overlap, permute=permute)[np.newaxis]
+    # Converting prediction to image
     prediction_image = prediction_to_image(prediction, affine, label_map=output_label_map, threshold=threshold,
                                            labels=labels)
+    # Saving predicted image to output_dir
     if isinstance(prediction_image, list):
         for i, image in enumerate(prediction_image):
             image.to_filename(os.path.join(output_dir, "prediction_{0}.nii.gz".format(i + 1)))
@@ -151,6 +154,7 @@ def run_validation_cases(config, output_label_map=False, output_dir=".", thresho
     
     data_file = tables.open_file(hdf5_file, "r")
     for index in validation_indices:
+        # create case_directory to save output of prediction process
         if 'subject_ids' in data_file.root:
             case_directory = os.path.join(output_dir, data_file.root.subject_ids[index].decode('utf-8'))
         else:
