@@ -25,7 +25,7 @@ def fetch_training_data_files(return_subject_ids=False):
         subject_ids.append(subject_dir_name)
         subject_files = list()
 
-        for modality in config["training_modalities"] + config["label_modality"]:
+        for modality in config["all_modalities"] + config["label_modality"]:
             subject_files.append(os.path.join(subject_dir, subject_dir_name + '_' + modality + ".nii.gz"))
 
         training_data_files.append(tuple(subject_files))
@@ -48,11 +48,13 @@ def visualize_filters_shape(model):
 def main(config=None):
     # convert input images into an hdf5 file
     overwrite = config['overwrite']
+    adding_noise = config['adding_noise']
+    modality = config['modality_to_add_noise_to']
     if overwrite or not os.path.exists(config["data_file"]):
         training_files, subject_ids = fetch_training_data_files(return_subject_ids=True)
 
         write_data_to_file(training_files, config["data_file"], image_shape=config["image_shape"],
-                           subject_ids=subject_ids)
+                           subject_ids=subject_ids, adding_noise=adding_noise, modality=modality)
     data_file_opened = open_data_file(config["data_file"])
 
     if not overwrite and os.path.exists(config["model_file"]):

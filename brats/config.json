@@ -29,7 +29,7 @@
     "flip": false,
     "permute": true,
     "distort": null,
-    "augment": false,
+    "augment": true,
     "skip_blank": false,
     "model_name": "attention_unet",
     "data_file": "brats_2018_data.h5",
@@ -38,6 +38,8 @@
     "validation_file": "validation_idx.pkl",
     "model_best":"checkpoints/model_best.h5",
     "overwrite": false,
+    "adding_noise": true,
+    "modality_to_add_noise_to": 0,
     "keys_tuple": ["image_shape", "labels"],
     "loss_fc": "weighted_dice_coefficient_loss",
     "metrics": ["dice_whole_tumor", "dice_tumor_core", "dice_enhancing_tumor"]

@@ -3,7 +3,7 @@ import os
 import numpy as np
 import tables
 
-from .normalize import normalize_data_storage, reslice_image_set
+from .normalize import normalize_data_storage, reslice_image_set, add_gaussian_noise
 
 # Create data file with extension .h5. The sample and label are stored in this file, 
 # retrieved with the fields ".root.data", ".root.truth", 
@@ -41,7 +41,7 @@ def add_data_to_storage(data_storage, truth_storage, affine_storage, subject_dat
 
 
 def write_data_to_file(training_data_files, out_file, image_shape, truth_dtype=np.uint8, subject_ids=None,
-                       normalize=True, crop=True):
+                       normalize=True, crop=True, adding_noise=False, modality=0):
     """
     Takes in a set of training images and writes those images to an hdf5 file.
     :param training_data_files: List of tuples containing the training data files. The modalities should be listed in
@@ -70,8 +70,10 @@ def write_data_to_file(training_data_files, out_file, image_shape, truth_dtype=n
                              affine_storage=affine_storage, crop=crop)
     if subject_ids:
         hdf5_file.create_array(hdf5_file.root, 'subject_ids', obj=subject_ids)
-    if normalize:
-        normalize_data_storage(data_storage)
+    # if normalize:
+    #     normalize_data_storage(data_storage)
+    if adding_noise:
+        add_gaussian_noise(data_storage, noise_variance=100, modality=0)
     hdf5_file.close()
     return out_file
 

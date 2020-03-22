@@ -8,6 +8,7 @@ from .training import load_old_model
 from .utils import pickle_load
 from .utils.patches import reconstruct_from_patches, get_patch_from_3d_data, compute_patch_indices
 from .augment import permute_data, generate_permutation_keys, reverse_permute_data
+from .deformation import add_gaussian_noise, reverse_z_normalization
 
 
 def patch_wise_prediction(model, data, overlap=0, batch_size=1, permute=False):
@@ -118,17 +119,25 @@ def run_validation_case(data_index, output_dir, model, data_file, training_modal
         os.makedirs(output_dir)
 
     affine = data_file.root.affine[data_index]
-    test_data = np.asarray([data_file.root.data[data_index]])
+    test_data = np.asarray([data_file.root.data[data_index]]) # shape: (1, 4, 128, 128, 128)
+
+    # saving data as data_t1.nii.gz file
     for i, modality in enumerate(training_modalities):
         image = nib.Nifti1Image(test_data[0, i], affine)
         image.to_filename(os.path.join(output_dir, "data_{0}.nii.gz".format(modality)))
 
+    # because ground-truth segmentation is concluded in data.h5
+    # saving ground-truth segmentation to the same folder where the prediction will be saved in
     test_truth = nib.Nifti1Image(data_file.root.truth[data_index][0], affine)
     test_truth.to_filename(os.path.join(output_dir, "truth.nii.gz"))
 
     # Start predict process
     patch_shape = tuple([int(dim) for dim in model.input.shape[-3:]])
     if patch_shape == test_data.shape[-3:]:
+        # print("Max in {}: {}".format(output_dir, np.amax(test_data)))
+        # print("Min in {}: {}".format(output_dir, np.amin(test_data)))
+        print("Processing {}...".format(output_dir))
+        test_data = add_gaussian_noise(test_data)
         prediction = predict(model, test_data, permute=permute)
     else:
         prediction = patch_wise_prediction(model=model, data=test_data, overlap=overlap, permute=permute)[np.newaxis]
@@ -144,14 +153,14 @@ def run_validation_case(data_index, output_dir, model, data_file, training_modal
 
 
 def run_validation_cases(config, output_label_map=False, output_dir=".", threshold=0.5, overlap=16, permute=False):
-    
+
     validation_keys_file=config["validation_file"]
     validation_indices = pickle_load(validation_keys_file)
     training_modalities=config["all_modalities"]
     labels=config["labels"]
     hdf5_file=config["data_file"]
     model = load_old_model(config)
-    
+
     data_file = tables.open_file(hdf5_file, "r")
     for index in validation_indices:
         # create case_directory to save output of prediction process

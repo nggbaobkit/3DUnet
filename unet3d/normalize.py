@@ -85,4 +85,14 @@ def normalize_data_storage(data_storage):
         data_storage[index] = normalize_data(data_storage[index], mean, std)
     return data_storage
 
+def add_gaussian_noise(data_storage, noise_variance=(100, 100), modality=0):
+    if noise_variance[0] == noise_variance[1]:
+        variance = noise_variance[0]
+    else:
+        variance = np.random.uniform(noise_variance[0], noise_variance[1])
+
+    data_storage[modality] += np.random.normal(0.0, variance, size=data_storage[modality].shape)
+
+    print("Finished adding gaussian noise...")
+    return data_storage
 

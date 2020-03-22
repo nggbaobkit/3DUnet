@@ -32,8 +32,9 @@ def get_callbacks(model_file, initial_learning_rate=0.0001, learning_rate_drop=0
                                            verbose=verbosity))
     if early_stopping_patience:
         callbacks.append(EarlyStopping(verbose=verbosity, patience=early_stopping_patience))
-    
-    callbacks.append(ModelCheckpoint(model_best_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min'))
+
+    file_path = "checkpoints/saved-model-{epoch:02d}-{val_loss:.5f}.hdf5"
+    callbacks.append(ModelCheckpoint(file_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min', period=1))
     return callbacks
 
 
