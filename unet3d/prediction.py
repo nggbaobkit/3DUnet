@@ -137,7 +137,7 @@ def run_validation_case(data_index, output_dir, model, data_file, training_modal
         # print("Max in {}: {}".format(output_dir, np.amax(test_data)))
         # print("Min in {}: {}".format(output_dir, np.amin(test_data)))
         print("Processing {}...".format(output_dir))
-        test_data = add_gaussian_noise(test_data)
+        # test_data = add_gaussian_noise(test_data)
         prediction = predict(model, test_data, permute=permute)
     else:
         prediction = patch_wise_prediction(model=model, data=test_data, overlap=overlap, permute=permute)[np.newaxis]
