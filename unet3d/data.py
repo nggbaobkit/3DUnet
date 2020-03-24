@@ -73,12 +73,7 @@ def write_data_to_file(training_data_files, out_file, image_shape, truth_dtype=n
     # if normalize:
     #     normalize_data_storage(data_storage)
     if adding_noise:
-        print("Data_storage shape: {}".format(data_storage.shape))
-        print("Max value after adding: {}".format(np.amax(data_storage)))
-        print("Min value after adding: {}".format(np.amin(data_storage)))
         add_gaussian_noise(data_storage, noise_variance=150, modality=modality)
-        print("Max value after adding: {}".format(np.amax(data_storage)))
-        print("Min value after adding: {}".format(np.amin(data_storage)))
 
     hdf5_file.close()
     return out_file

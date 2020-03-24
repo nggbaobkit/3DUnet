@@ -78,7 +78,7 @@ def main():
     plt.savefig("validation_scores_boxplot.png")
     plt.close()
 
-    visualize_training_process('./training.log')
+    # visualize_training_process('./training.log')
 
 def visualize_training_process(logfile):
     if os.path.exists(logfile):
