@@ -38,7 +38,7 @@
     "validation_file": "validation_idx.pkl",
     "model_best":"checkpoints/model_best.h5",
     "overwrite": false,
-    "adding_noise": true,
+    "adding_noise": false,
     "modality_to_add_noise_to": 0,
     "keys_tuple": ["image_shape", "labels"],
     "loss_fc": "weighted_dice_coefficient_loss",
