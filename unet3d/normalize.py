@@ -86,9 +86,3 @@ def normalize_data_storage(data_storage):
     return data_storage
 
 
-def add_gaussian_noise(data_storage, noise_variance, modality):
-    for index in range(data_storage.shape[0]):
-        data_storage[index][modality] += np.random.normal(0.0, noise_variance, size=data_storage[index][modality].shape)
-
-    print("Finished adding gaussian noise with variance = {}...".format(noise_variance))
-    return data_storage

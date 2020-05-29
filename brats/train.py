@@ -4,7 +4,6 @@ import json
 import argparse
 
 import sys
-
 sys.path.append('../')
 
 from unet3d.data import write_data_to_file, open_data_file
@@ -13,9 +12,6 @@ from unet3d.model import isensee2017_model, attention_unet_model
 from unet3d.training import load_old_model, train_model
 import unet3d.metrics as module_metric
 import keras.optimizers as opts
-
-
-
 
 def fetch_training_data_files(return_subject_ids=False):
     training_data_files = list()
@@ -48,13 +44,11 @@ def visualize_filters_shape(model):
 def main(config=None):
     # convert input images into an hdf5 file
     overwrite = config['overwrite']
-    adding_noise = config['adding_noise']
-    modality = config['modality_to_add_noise_to']
     if overwrite or not os.path.exists(config["data_file"]):
         training_files, subject_ids = fetch_training_data_files(return_subject_ids=True)
 
         write_data_to_file(training_files, config["data_file"], image_shape=config["image_shape"],
-                           subject_ids=subject_ids, adding_noise=adding_noise, modality=modality)
+                           subject_ids=subject_ids)
     data_file_opened = open_data_file(config["data_file"])
 
     if not overwrite and os.path.exists(config["model_file"]):
