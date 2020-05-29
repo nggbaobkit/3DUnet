@@ -60,15 +60,16 @@ def attention_unet_model(input_shape=(4, 128, 128, 128), n_base_filters=16, dept
         """
         Starting attention gating
         """
-        x = Conv3D(level_filters[level_number], (1, 1, 1))(level_output_layers[level_number])  # level 3
-        g = Conv3D(level_filters[level_number], (1, 1, 1))(current_layer)  # level 4
-        g = UpSampling3D(size=2)(g)
-        concat = Concatenate(axis=1)([x, g])
-        relu = Activation('relu')(concat)
-        psi = Conv3D(level_filters[level_number], (1, 1, 1))(relu)  # level 4
+        original_x = level_output_layers[level_number]
+        x = Conv3D(level_filters[level_number], kernel_size=(1, 1, 1), use_bias=False, padding="valid")(level_output_layers[level_number])  # level 3
+        g = Conv3D(level_filters[level_number], kernel_size=(1, 1, 1), use_bias=True, padding="valid")(current_layer)  # level 4
+        g = UpSampling3D(size=2, data_format="channels_first")(g)
+        summation = Add()([x, g])
+        relu = Activation('relu')(summation)
+        psi = Conv3D(level_filters[level_number], kernel_size=(1, 1, 1), use_bias=True, padding="valid")(relu)  # level 4
         sigmoid = Activation('sigmoid')(psi)
-        # upsampled = F.upsample(sigmoid, size=(2,2,2), mode='trilinear') #size thi bang cho cai ma no cbi concat
-        concatenation_layer = Multiply()([x, sigmoid])
+        # upsampled = F.upsample(sigmoid, size=2, mode='trilinear') # size thi bang cho cai ma no cbi concat
+        concatenation_layer = Multiply()([original_x, sigmoid])
 
         localization_output = create_localization_module(concatenation_layer, level_filters[level_number])
         current_layer = localization_output
@@ -84,7 +85,9 @@ def attention_unet_model(input_shape=(4, 128, 128, 128), n_base_filters=16, dept
             output_layer = Add()([output_layer, segmentation_layer])
 
         if level_number > 0:
+            print("Upsampling output with shape: {}".format(output_layer.shape))
             output_layer = UpSampling3D(size=(2, 2, 2))(output_layer)
+            print("Another upsampling output with shape: {}".format(output_layer.shape))
 
     activation_block = None
 
