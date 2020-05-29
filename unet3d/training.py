@@ -22,7 +22,7 @@ def get_callbacks(model_file, initial_learning_rate=0.0001, learning_rate_drop=0
                   learning_rate_patience=50, logging_file="training.log", verbosity=1,
                   early_stopping_patience=None, model_best_path='checkpoints/model_best.h5'):
     callbacks = list()
-    callbacks.append(ModelCheckpoint(model_file, save_best_only=True))
+    callbacks.append(ModelCheckpoint(model_file, save_best_only=False, verbose=1))
     callbacks.append(CSVLogger(logging_file, append=True))
     if learning_rate_epochs:
         callbacks.append(LearningRateScheduler(partial(step_decay, initial_lrate=initial_learning_rate,
